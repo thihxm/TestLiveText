@@ -11,6 +11,10 @@
 		AF8ADD9E26DFED7600CFA44D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8ADD9D26DFED7600CFA44D /* ContentView.swift */; };
 		AF8ADDA026DFED7700CFA44D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AF8ADD9F26DFED7700CFA44D /* Assets.xcassets */; };
 		AF8ADDA326DFED7700CFA44D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AF8ADDA226DFED7700CFA44D /* Preview Assets.xcassets */; };
+		AF8ADDAB26DFF0BA00CFA44D /* ScanDocumentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8ADDAA26DFF0BA00CFA44D /* ScanDocumentView.swift */; };
+		AF8ADDAF26E0210D00CFA44D /* BaseVisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8ADDAE26E0210D00CFA44D /* BaseVisonView.swift */; };
+		AF8ADDB126E02B8000CFA44D /* LiveTextViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8ADDB026E02B8000CFA44D /* LiveTextViewController.swift */; };
+		AF8ADDB326E0413600CFA44D /* VisionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8ADDB226E0413600CFA44D /* VisionViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +24,10 @@
 		AF8ADD9F26DFED7700CFA44D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AF8ADDA226DFED7700CFA44D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		AF8ADDA426DFED7700CFA44D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AF8ADDAA26DFF0BA00CFA44D /* ScanDocumentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanDocumentView.swift; sourceTree = "<group>"; };
+		AF8ADDAE26E0210D00CFA44D /* BaseVisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseVisonView.swift; sourceTree = "<group>"; };
+		AF8ADDB026E02B8000CFA44D /* LiveTextViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTextViewController.swift; sourceTree = "<group>"; };
+		AF8ADDB226E0413600CFA44D /* VisionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +65,10 @@
 				AF8ADD9F26DFED7700CFA44D /* Assets.xcassets */,
 				AF8ADDA426DFED7700CFA44D /* Info.plist */,
 				AF8ADDA126DFED7700CFA44D /* Preview Content */,
+				AF8ADDAA26DFF0BA00CFA44D /* ScanDocumentView.swift */,
+				AF8ADDAE26E0210D00CFA44D /* BaseVisonView.swift */,
+				AF8ADDB026E02B8000CFA44D /* LiveTextViewController.swift */,
+				AF8ADDB226E0413600CFA44D /* VisionViewController.swift */,
 			);
 			path = TestLiveText;
 			sourceTree = "<group>";
@@ -139,7 +151,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				AF8ADD9E26DFED7600CFA44D /* ContentView.swift in Sources */,
+				AF8ADDAB26DFF0BA00CFA44D /* ScanDocumentView.swift in Sources */,
+				AF8ADDB126E02B8000CFA44D /* LiveTextViewController.swift in Sources */,
+				AF8ADDB326E0413600CFA44D /* VisionViewController.swift in Sources */,
 				AF8ADD9C26DFED7600CFA44D /* TestLiveTextApp.swift in Sources */,
+				AF8ADDAF26E0210D00CFA44D /* BaseVisonView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
