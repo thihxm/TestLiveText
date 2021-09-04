@@ -28,15 +28,15 @@ class VisionViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         // MARK: Setup camera input
-        captureSession = AVCaptureSession()
-        captureSession.beginConfiguration()
+        self.captureSession = AVCaptureSession()
+        self.captureSession.beginConfiguration()
         
-//        captureSession.sessionPreset = .medium
+        // Reduces video quality to medium
+        // captureSession.sessionPreset = .medium
         
         guard let videoCaptureDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
-            //handle this appropriately for production purposes
             fatalError("no back camera")
         }
 
@@ -44,34 +44,33 @@ class VisionViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
             fatalError("could not create input device from back camera")
         }
 
-        guard captureSession.canAddInput(backInput) else {
+        guard self.captureSession.canAddInput(backInput) else {
             fatalError("could not add back camera input to capture session")
         }
         
-        captureSession.addInput(backInput)
+        self.captureSession.addInput(backInput)
         
         // MARK: Setup video output
         self.videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA)]
-//        self.videoDataOutput.alwaysDiscardsLateVideoFrames = true
         let videoQueue = DispatchQueue(label: "camera_frame_processing_queue", qos: .userInteractive)
         self.videoDataOutput.setSampleBufferDelegate(self, queue: videoQueue)
 
-        if captureSession.canAddOutput(self.videoDataOutput) == true {
+        if self.captureSession.canAddOutput(self.videoDataOutput) == true {
             self.captureSession.addOutput(self.videoDataOutput)
         } else {
             debugPrint("could not add video output")
         }
         self.videoDataOutput.connections.first?.videoOrientation = .portrait
         
+        self.captureSession.commitConfiguration()
+        self.captureSession.startRunning()
+
         // MARK: Setup preview layer
-        previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        previewLayer.frame = self.view.frame
-        previewLayer.videoGravity = .resizeAspectFill
-        view.layer.insertSublayer(previewLayer, at: 0)
-        previewLayer.frame = CGRect(origin: .zero, size: view.frame.size)
-        
-        captureSession.commitConfiguration()
-        captureSession.startRunning()
+        self.previewLayer = AVCaptureVideoPreviewLayer(session: self.captureSession)
+        self.previewLayer.frame = self.view.frame
+        self.previewLayer.videoGravity = .resizeAspectFill
+        self.view.layer.insertSublayer(self.previewLayer, at: 0)
+        self.previewLayer.frame = CGRect(origin: .zero, size: self.view.frame.size)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -103,7 +102,8 @@ class VisionViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
     }
-    
+
+    // MARK: Implement delegate's image capture output
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let frame = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             debugPrint("Unable to get image from sample buffer")
@@ -112,11 +112,13 @@ class VisionViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
         
         self.detectText(buffer: frame)
     }
-    
+
+    // MARK: Setup text recognition request
     func detectText(buffer: CVPixelBuffer) {
         let request = VNRecognizeTextRequest(completionHandler: textRecognitionHandler)
 
-        // try? VNRecognizeTextRequest.supportedRecognitionLanguages(for: .fast, revision: VNRecognizeTextRequest.defaultRevision)
+        // Print default recognition languages
+        // print(try? VNRecognizeTextRequest.supportedRecognitionLanguages(for: .fast, revision: VNRecognizeTextRequest.defaultRevision))
 
         request.recognitionLanguages = ["pt-BR", "en-US", "es-ES"]
 
@@ -127,12 +129,12 @@ class VisionViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
     }
     
 
-    // MARK: perform detection
+    // MARK: perform text detection
     func performDetection(request: VNRecognizeTextRequest, buffer: CVPixelBuffer) {
         let requests = [request]
         let handler = VNImageRequestHandler(cvPixelBuffer: buffer, orientation: .up, options: [:])
 
-        // perform the recognition in background thread. Otherwise, it ay block another thread
+        // Perform the recognition in background thread. Otherwise, it ay block another thread
         DispatchQueue.global(qos: .userInitiated).async {
             do {
                 try handler.perform(requests)
@@ -141,59 +143,67 @@ class VisionViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
             }
         }
     }
-    
+
+    // MARK: Setup text recognition handler
     private func textRecognitionHandler(request: VNRequest, error: Error?) {
-        guard let observations = request.results else {
-            // no result
+        guard let observations = request.results as? [VNRecognizedTextObservation] else {
+            // No result
             DispatchQueue.main.async {
                 self.clearTextBoxLayer()
             }
             return
         }
-        
-        let results = observations.compactMap { $0 as? VNRecognizedTextObservation }
+
         DispatchQueue.main.async {
             self.clearTextBoxLayer()
         }
-        for result in results {
-            // find the recognized text in the center of image with certain confidence
+        for result in observations {
+            // Find the recognized text in the center of screen with certain confidence
             for text in result.topCandidates(1)
             where text.confidence >= 0.5 && result.boundingBox.contains(.init(x: 0.5, y: 0.5)) {
                 // Update UI in main thread as the image is analyzed in background thread
                 DispatchQueue.main.async {
                     let trimmedText = text.string.trimmingCharacters(in: .whitespacesAndNewlines)
-                    print(text.string)
-                    self.delegate?.textWasFound(result: true)
-                    self.delegate?.foundText(result: trimmedText)
+
+                    self.delegate?.foundText(text: trimmedText)
+
                     self.highlightWord(box: result)
                 }
                 
-                return // use the first one only
+                return // Use the first one only
             }
         }
     }
 
+    // MARK: Create text recognition bounding box highlight layer
     private func highlightWord(box: VNRecognizedTextObservation) {
         recognizedTextBoxLayer?.removeFromSuperlayer()
 
-        // the bounding box is originated from bottom left corner with normalized value (0-1)
-        // so we need to convert it to the view coordinate system
-        let xCord = box.topLeft.x * self.view.frame.size.width
-        let yCord = ((1 - box.topLeft.y) * self.view.frame.size.height) + 50
-        let width = (box.topRight.x - box.topLeft.x) * self.view.frame.size.width
-        let height = (box.topLeft.y - box.bottomLeft.y) * self.view.frame.size.height
+        guard let candidate = box.topCandidates(1).first else { return }
 
+        let stringRange = candidate.string.startIndex..<candidate.string.endIndex
+        let boxObservation = try? candidate.boundingBox(for: stringRange)
+
+        let boundingBox = boxObservation?.boundingBox ?? .zero
+        
+        let viewWidth = Int(view.frame.size.width)
+        let viewHeight = Int(view.frame.size.height)
+
+        // Normalize bounding box to view coordinate system
+        let rect = VNImageRectForNormalizedRect(boundingBox, viewWidth, viewHeight)
+
+        // Create the rectangle layer
         let outline = CALayer()
-        outline.frame = CGRect(x: xCord, y: yCord, width: width, height: height)
+        outline.frame = rect
         outline.borderWidth = 1.0
         outline.borderColor = UIColor.red.cgColor
         recognizedTextBoxLayer = outline
 
         if let layer = previewLayer {
-            // insert the bounding box above the AVCaptureVideo preview layer
+            // Insert the bounding box above the AVCaptureVideo preview layer
             layer.insertSublayer(outline, above: layer)
         } else {
-            // insert the bounding box to the bottom layer
+            // Insert the bounding box to the bottom layer
             self.view.layer.insertSublayer(outline, at: 0)
         }
     }
@@ -204,8 +214,6 @@ class VisionViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
     }
 }
 
-protocol TextFoundDelegate {
-    func textWasFound(result: Bool)
-    
-    func foundText(result: String)
+protocol TextFoundDelegate {    
+    func foundText(text: String)
 }

@@ -34,7 +34,6 @@ struct ContentView: View {
                         destination: ZStack {
                                 LiveTextViewController(recognizedText: $recognizedText)
                                     .border(Color.red)
-//                                    .ignoresSafeArea(.all, edges: .bottom)
 
                                 Text(recognizedText)
                                     .padding()
@@ -43,38 +42,20 @@ struct ContentView: View {
                                 Image(systemName: "plus")
                                     .font(.title2)
                                     .foregroundColor(.blue.opacity(0.75))
-                                    .offset(y: 55)
                         }
-                        .navigationBarTitle("")
-                        .navigationBarHidden(true),
+                        .edgesIgnoringSafeArea(.all)
+                        .navigationBarTitleDisplayMode(.inline),
                         label: {
-//                            Button(action: {
-//                                self.showingScanningView = true
-//                            }) {
-                                Text("Start Scanning")
-                                    .padding()
-                                    .background(Capsule().fill(Color.blue))
-//                            }
-                            .foregroundColor(.white)
+                            Text("Start Scanning")
+                                .padding()
+                                .background(Capsule().fill(Color.blue))
+                                .foregroundColor(.white)
                         })
                 }
                 .padding()
             }
             .navigationBarTitle("Text Recognition")
         }
-//        .sheet(isPresented: $showingScanningView) {
-//            ZStack {
-//                LiveTextViewController(recognizedText: $recognizedText)
-//
-//                Text(recognizedText)
-//                    .padding()
-//                    .offset(y: 250)
-//
-//                Image(systemName: "plus")
-//                    .font(.title2)
-//                    .foregroundColor(.blue.opacity(0.75))
-//            }
-//        }
     }
 }
 
